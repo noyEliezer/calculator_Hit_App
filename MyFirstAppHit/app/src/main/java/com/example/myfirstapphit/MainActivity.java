@@ -5,6 +5,8 @@ import android.widget.Button;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.util.Stack;
+
 public class MainActivity extends AppCompatActivity {
     private TextView textViewExpression;
     private TextView textViewResult;
@@ -82,34 +84,59 @@ public class MainActivity extends AppCompatActivity {
 
     private double evaluateExpression(String expr) {
         String[] parts = expr.split(" ");
-        double result = Double.parseDouble(parts[0]);
+        Stack<Double> numbers = new Stack<>();
+        Stack<String> operators = new Stack<>();
 
-        for (int i = 1; i < parts.length; i += 2) {
-            String operator = parts[i];
-            double number = Double.parseDouble(parts[i + 1]);
-
-            switch (operator) {
-                case "+":
-                    result += number;
-                    break;
-                case "-":
-                    result -= number;
-                    break;
-                case "*":
-                    result *= number;
-                    break;
-                case "/":
-                    if (number != 0) {
-                        result /= number;
-                    } else {
-                        throw new ArithmeticException("Division by zero");
-                    }
-                    break;
+        for (String part : parts) {
+            if (isOperator(part)) {
+                while (!operators.isEmpty() && precedence(operators.peek()) >= precedence(part)) {
+                    double b = numbers.pop();
+                    double a = numbers.pop();
+                    String op = operators.pop();
+                    numbers.push(applyOperator(a, b, op));
+                }
+                operators.push(part);
+            } else {
+                numbers.push(Double.parseDouble(part));
             }
         }
-        return result;
-    }
 
+        while (!operators.isEmpty()) {
+            double b = numbers.pop();
+            double a = numbers.pop();
+            String op = operators.pop();
+            numbers.push(applyOperator(a, b, op));
+        }
+
+        return numbers.pop();
+    }
+    private int precedence(String operator) {
+        switch (operator) {
+            case "+": case "-":
+                return 1;
+            case "*": case "/":
+                return 2;
+            default:
+                return 0;
+        }
+    }
+    private double applyOperator(double a, double b, String operator) {
+        switch (operator) {
+            case "+":
+                return a + b;
+            case "-":
+                return a - b;
+            case "*":
+                return a * b;
+            case "/":
+                if (b == 0) {
+                    throw new ArithmeticException("Division by zero");
+                }
+                return a / b;
+            default:
+                throw new IllegalArgumentException("Unknown operator: " + operator);
+        }
+    }
     private String formatResult(double result) {
         if (result == (long) result) {
             return String.valueOf((long) result);
@@ -206,6 +233,9 @@ public class MainActivity extends AppCompatActivity {
         return expr.substring(lastSpace + 1);
     }
 
+    private boolean isOperator(String s) {
+        return s.equals("+") || s.equals("-") || s.equals("*") || s.equals("/");
+    }
     private boolean isOperator(char c) {
         return c == '+' || c == '-' || c == '*' || c == '/';
     }
