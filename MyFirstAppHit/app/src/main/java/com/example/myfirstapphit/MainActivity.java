@@ -5,6 +5,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.text.DecimalFormat;
 import java.util.Stack;
 
 public class MainActivity extends AppCompatActivity {
@@ -182,33 +183,37 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void changeSign(View view) {
-        if (expression.length() > 0) {
+        if (!textViewResult.getText().toString().isEmpty()) {
             try {
-                double currentNumber = Double.parseDouble(expression.toString());
-                currentNumber = -currentNumber;
+                double currentValue = Double.parseDouble(textViewResult.getText().toString());
+
+                currentValue = -currentValue;
+
+                textViewResult.setText(String.valueOf(currentValue));
+
                 expression.setLength(0);
-                expression.append(currentNumber);
-                updateDisplay();
+                expression.append(currentValue);
             } catch (NumberFormatException e) {
-                throw new RuntimeException(e);
+                textViewResult.setText("Error");
             }
         }
     }
-
     public void calculatePercentage(View view) {
-        if (expression.length() > 0) {
+        if (!textViewResult.getText().toString().isEmpty()) {
             try {
-                double currentNumber = Double.parseDouble(expression.toString());
+                double currentNumber = Double.parseDouble(textViewResult.getText().toString());
+
                 currentNumber = currentNumber / 100;
+
+                textViewResult.setText(String.valueOf(currentNumber));
+
                 expression.setLength(0);
                 expression.append(currentNumber);
-                updateDisplay();
             } catch (NumberFormatException e) {
-                throw new RuntimeException(e);
+                textViewResult.setText("Error");
             }
         }
     }
-
     public void dotFunc(View view) {
         if (isNewCalculation) {
             expression.setLength(0);
